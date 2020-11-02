@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>PoolNet</title>
+    <script>
+      function requestUnixTime() {
+        const contTempSet = document.getElementById('tSet');
+        const contTempCurr = document.getElementById('tCurr');
+        const contTempAmbient = document.getElementById('tAmb');
+        const contWaterLevelOK = document.getElementById('stWLok');
+        const contStCirc = document.getElementById('stCirc');
+        const contStHeat = document.getElementById('stHeater');
+        const contStAir = document.getElementById('stAir');
+
+        fetch('cgi-bin/poolstatus.pl') // request data from the server
+        .then(response => response.text()) // convert the response to raw text
+        .then((stateString) => {
+          var stateVec = stateString.split(";");
+          var tempSet, tempCurrent, tempAmbient, stateWaterlevel, stateCirculation, stateHeater, stateBubbles;
+          [tempSet, tempCurrent, tempAmbient, stateWaterlevel, stateCirculation, stateHeater, stateBubbles] = stateVec;
+          // build the HTML of the page
+          contTempSet.innerText = tempSet;
+          contTempCurr.innerText = tempCurrent;
+          contTempAmbient.innerText = tempAmbient;
+
+          switch (parseInt(stateWaterlevel)) {
+            case 0:
+              contWaterLevelOK.innerText = "LOW";
+              break;
+            case 1:
+              contWaterLevelOK.innerText = "OK";
+              break;
+            default:
+              contWaterLevelOK.innerText = "UNKNOWN";
+          }
+
+          switch (parseInt(stateCirculation)) {
+            case 0:
+              contStCirc.innerText = "Off";
+              break;
+            case 1:
+              contStCirc.innerText = "On";
+              break;
+            default:
+              contStCirc.innerText = "UNKNOWN";
+          }
+
+          switch (parseInt(stateHeater)) {
+            case 0:
+              contStHeat.innerText = "Off";
+              break;
+            case 1:
+              contStHeat.innerText = "Stand-by";
+              break;
+            case 2:
+              contStHeat.innerText = "ERROR: heating while disabled";
+              break;
+            case 3:
+              contStHeat.innerText = "Heating";
+              break;
+            default:
+              contStHeat.innerText = "UNKNOWN";
+          }
+
+          switch (parseInt(stateBubbles)) {
+            case 0:
+              contStAir.innerText = "Off";
+              break;
+            case 1:
+              contStAir.innerText = "On";
+              break;
+            default:
+              contStAir.innerText = "UNKNOWN";
+          }
+
+        });
+      }
+
+      function startUpdateTimer() {
+        //const resultContainer = document.getElementById('result');
+        const contTempCurr = document.getElementById('tCurr');
+        contTempCurr.innerText = 'Loading...';
+        setInterval(requestUnixTime, 1000);
+      }
+
+      function btnInc() { fetch('cgi-bin/poolcmd.pl?i'); }
+      function btnDec() { fetch('cgi-bin/poolcmd.pl?d'); }
+      function btnOff() { fetch('cgi-bin/poolcmd.pl?o'); }
+      function btnDefrost() { fetch('cgi-bin/poolcmd.pl?f'); }
+      function btnHeat() { fetch('cgi-bin/poolcmd.pl?h'); }
+      function btnBubbles() { fetch('cgi-bin/poolcmd.pl?b'); }
+      function btnShutdownSystem() { window.location.href="/shutdown.html"; }
+    </script>
+  </head>
+  <body onload="startUpdateTimer();">
+    <h1>PoolNet</h1>
+    <p>Current temperature: <span id="tCurr">--</span> C</p>
+    <p>Water level: <span id="stWLok"></span></p>
+    <p>Water pump: <span id="stCirc"></span></p>
+    <p>Heater: <span id="stHeater"></span></p>
+    <p></p>
+    <p>
+      Heater mode: 
+      <button onclick="btnOff()">OFF</button>
+      <button onclick="btnDefrost()">Anti-freeze</button>
+      <button onclick="btnHeat()">ON</button>
+    </p>
+    <p>
+      Target temperature: 
+      <button onclick="btnDec()">Decrease</button>
+      <span id="tSet">--</span> C
+      <button onclick="btnInc()">Increase</button>
+    </p>
+    <p>
+      Bubbles: <span id="stAir"></span>
+      <button onclick="btnBubbles()">Toggle</button>
+    </p>
+    <p>Ambient temperature: <span id="tAmb">--</span> C</p>
+    <br><br><p><button onclick="btnShutdownSystem()">Shutdown system</button></p>
+  </body>
+</html>

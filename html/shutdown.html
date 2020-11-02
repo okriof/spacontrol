@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>PoolNet</title>
+    <script>
+      function btnShutdownYes() { fetch('cgi-bin/poolcmd.pl?q'); }
+      function btnShutdownNo() { window.location.href="/"; }
+    </script>
+  </head>
+  <body>
+    <h1>PoolNet</h1>
+    <p>Really shut down system?</p>
+    <p>
+      <button onclick="btnShutdownYes()">Yes</button>
+      <button onclick="btnShutdownNo()">No</button>
+    </p>
+  </body>
+</html>
